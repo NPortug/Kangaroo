@@ -194,7 +194,7 @@ void Kangaroo::ProcessServer() {
     for(int i = 0; i<(int)localCache.size() && !endOfSearch; i++) {
       DP_CACHE dp = localCache[i];
       for(int j = 0; j<(int)dp.nbDP && !endOfSearch; j++) {
-        uint64_t h = dp.dp[j].h;
+        uint64_t h = dp.dp[j].h;                                   // sky59 ????? tu je to ine
         if(!AddToTable(h,&dp.dp[j].x,&dp.dp[j].d)) {
           // Collision inside the same herd
           collisionInSameHerd++;

@@ -54,13 +54,18 @@ uint64_t HashTable::GetNbItem() {
 
 }
 
-ENTRY *HashTable::CreateEntry(int128_t *x,int128_t *d) {
+ENTRY *HashTable::CreateEntry(int256_t *x,int256_t *d) {
 
   ENTRY *e = (ENTRY *)malloc(sizeof(ENTRY));
   e->x.i64[0] = x->i64[0];
   e->x.i64[1] = x->i64[1];
+  e->x.i64[2] = x->i64[2];
+  e->x.i64[3] = x->i64[3];
   e->d.i64[0] = d->i64[0];
   e->d.i64[1] = d->i64[1];
+  e->d.i64[2] = d->i64[2];
+  e->d.i64[3] = d->i64[3];
+  //e->kType = kType;                sky59 toto je zrusene lebo je to v 255bite
   return e;
 
 }
@@ -72,6 +77,32 @@ ENTRY *HashTable::CreateEntry(int128_t *x,int128_t *d) {
   E[h].items[st] = entry;                  \
   E[h].nbItem++;}
 
+
+/*
+void HashTable::toint256t(Int *a, int256_t *b)           // sky59 cela funkcia vlozena mozno ju netreba
+{
+  b->i64[0] = a->bits64[0];
+  b->i64[1] = a->bits64[1];
+  b->i64[2] = a->bits64[2];
+  b->i64[3] = a->bits64[3];
+}
+
+void HashTable::toInt(int256_t *a, Int *b)                // sky59 cela funkcia vlozena mozno ju netreba
+{
+  b->bits64[0] = a->i64[0];
+  b->bits64[1] = a->i64[1];
+  b->bits64[2] = a->i64[2];
+  b->bits64[3] = a->i64[3];
+}*/
+
+/*
+void HashTable::Convert(Int *x,Int *d,int256_t *X,int256_t *D) {    // sky59 cela funkcia vlozena mozno ju netreba
+
+  toint256t(x,X);
+  toint256t(d,D);
+}*/
+
+/*
 void HashTable::Convert(Int *x,Int *d,uint32_t type,uint64_t *h,int128_t *X,int128_t *D) {
 
   uint64_t sign = 0;
@@ -97,7 +128,65 @@ void HashTable::Convert(Int *x,Int *d,uint32_t type,uint64_t *h,int128_t *X,int1
 
   *h = (x->bits64[2] & HASH_MASK);
 
+}*/
+
+// sky59 kompletne zmenena funkcia
+void HashTable::Convert(Int *x,Int *d,uint32_t type,uint64_t *h,int256_t *X,int256_t *D) {
+
+  uint64_t sign = 0;
+  uint64_t type64 = (uint64_t)type << 62;
+
+  X->i64[0] = x->bits64[0];
+  X->i64[1] = x->bits64[1];
+  X->i64[2] = x->bits64[2];
+  X->i64[3] = x->bits64[3];
+  
+  
+
+  // Probability of failure (1/2^128)
+  if(d->bits64[3] > 0x7FFFFFFFFFFFFFFFULL) {
+    Int N(d);
+    N.ModNegK1order();
+    D->i64[0] = N.bits64[0];
+    D->i64[1] = N.bits64[1];
+    D->i64[2] = N.bits64[2];
+    D->i64[3] = N.bits64[3] & 0x3FFFFFFFFFFFFFFFULL;
+    sign = 1ULL << 63;
+  } else {
+    D->i64[0] = d->bits64[0];
+    D->i64[1] = d->bits64[1];
+    D->i64[2] = d->bits64[2];
+    D->i64[3] = d->bits64[3] & 0x3FFFFFFFFFFFFFFFULL;
+  }
+
+  D->i64[3] |= sign;
+  D->i64[3] |= type64;
+
+  *h = (x->bits64[2] & HASH_MASK);      // sky59 ******* VYRIESIT *******toto je povodne nechapem !!!!! je to 17 bitov zhora???
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #define AV1() if(pnb1) { ::fread(&e1,32,1,f1); pnb1--; }
@@ -157,8 +246,9 @@ int HashTable::MergeH(uint32_t h,FILE* f1,FILE* f2,FILE* fd,uint32_t* nbDP,uint3
         AV1();
         nb1--;
       } else if (comp==0) {
-        if((e1.d.i64[0] == e2.d.i64[0]) && (e1.d.i64[1] == e2.d.i64[1])) {
-          *duplicate = *duplicate + 1;
+        //if((e1.d.i64[0] == e2.d.i64[0]) && (e1.d.i64[1] == e2.d.i64[1])) {    sky59
+		  if((e1.d.i64[0] == e2.d.i64[0]) && (e1.d.i64[1] == e2.d.i64[1]) && (e1.d.i64[2] == e2.d.i64[2]) && (e1.d.i64[3] == e2.d.i64[3])) {	
+		  *duplicate = *duplicate + 1;
         } else {
           // Collision
           CalcDistAndType(e1.d,d1,k1);
@@ -220,8 +310,8 @@ int HashTable::MergeH(uint32_t h,FILE* f1,FILE* f2,FILE* fd,uint32_t* nbDP,uint3
 
 int HashTable::Add(Int *x,Int *d,uint32_t type) {
 
-  int128_t X;
-  int128_t D;
+  int256_t X;
+  int256_t D;
   uint64_t h;
   Convert(x,d,type,&h,&X,&D);
   ENTRY* e = CreateEntry(&X,&D);
@@ -239,13 +329,20 @@ void HashTable::ReAllocate(uint64_t h,uint32_t add) {
 
 }
 
-int HashTable::Add(uint64_t h,int128_t *x,int128_t *d) {
+int HashTable::Add(uint64_t h,int256_t *x,int256_t *d) {
 
   ENTRY *e = CreateEntry(x,d);
   return Add(h,e);
 
 }
+/*
+int HashTable::Add(int256_t *x,int256_t *d, uint32_t type) {
+  uint64_t h = (x->i64[0] ^ x->i64[1] ^ x->i64[2] ^ x->i64[3]) & HASH_SIZE;
+  ENTRY *e = CreateEntry(x,d,type);
+  return Add(h,e);}
+*/
 
+/* sky59 toto je povodna ja som ju kompletne zmenil !!!!!!!!!
 void HashTable::CalcDistAndType(int128_t d,Int* kDist,uint32_t* kType) {
 
   *kType = (d.i64[1] & 0x4000000000000000ULL) != 0;
@@ -258,6 +355,29 @@ void HashTable::CalcDistAndType(int128_t d,Int* kDist,uint32_t* kType) {
   if(sign) kDist->ModNegK1order();
 
 }
+*/
+
+void HashTable::CalcDistAndType(int256_t d,Int* kDist,uint32_t* kType) {
+
+  *kType = (d.i64[3] &   0x4000000000000000ULL) != 0;
+  int sign = (d.i64[3] & 0x8000000000000000ULL) != 0;
+  d.i64[3] &=            0x3FFFFFFFFFFFFFFFULL;
+
+  kDist->SetInt32(0);
+  kDist->bits64[0] = d.i64[0];
+  kDist->bits64[1] = d.i64[1];
+  kDist->bits64[2] = d.i64[2];
+  kDist->bits64[3] = d.i64[3];
+  if(sign) kDist->ModNegK1order();
+
+}
+
+/*
+void HashTable::CalcDist(int256_t *d,Int* kDist) {
+  kDist->SetInt32(0);
+  toInt(d,kDist);
+}
+*/
 
 int HashTable::Add(uint64_t h,ENTRY* e) {
 
@@ -287,7 +407,7 @@ int HashTable::Add(uint64_t h,ENTRY* e) {
       ed = mi - 1;
     } else if (comp==0) {
 
-      if((e->d.i64[0] == GET(h,mi)->d.i64[0]) && (e->d.i64[1] == GET(h,mi)->d.i64[1])) {
+      if((e->d.i64[0] == GET(h,mi)->d.i64[0]) && (e->d.i64[1] == GET(h,mi)->d.i64[1]) && (e->d.i64[2] == GET(h,mi)->d.i64[2]) && (e->d.i64[3] == GET(h,mi)->d.i64[3]) ){
         // Same point added 2 times or collision in same herd !
         return ADD_DUPLICATE;
       }
@@ -306,11 +426,32 @@ int HashTable::Add(uint64_t h,ENTRY* e) {
 
 }
 
-int HashTable::compare(int128_t *i1,int128_t *i2) {
+int HashTable::compare(int256_t *i1,int256_t *i2) {         //sky59 kompletne prerobene
 
   uint64_t *a = i1->i64;
   uint64_t *b = i2->i64;
 
+
+  if(a[3] == b[3]) {
+    if(a[2] == b[2]) {
+      if(a[1] == b[1]) {
+    	if(a[0] == b[0]) {
+	  return 0;
+	} else {
+	  return (a[0] > b[0]) ? 1 : -1;
+	}
+      } else {
+        return (a[1] > b[1]) ? 1 : -1;
+      }
+    } else {
+      return (a[2] > b[2]) ? 1 : -1;
+    }
+  } else {
+    return (a[3] > b[3]) ? 1 : -1;
+  }
+
+
+/*
   if(a[1] == b[1]) {
     if(a[0] == b[0]) {
       return 0;
@@ -320,7 +461,7 @@ int HashTable::compare(int128_t *i1,int128_t *i2) {
   } else {
     return (a[1] > b[1]) ? 1 : -1;
   }
-
+*/
 }
 
 std::string HashTable::GetSizeInfo() {
@@ -356,7 +497,7 @@ std::string HashTable::GetSizeInfo() {
 
 }
 
-std::string HashTable::GetStr(int128_t *i) {
+std::string HashTable::GetStr(int256_t *i) {           // sky59 dufam ze berie cely 256bits
 
   std::string ret;
   char tmp[256];
@@ -374,15 +515,15 @@ void HashTable::SaveTable(FILE* f) {
 
 void HashTable::SaveTable(FILE* f,uint32_t from,uint32_t to,bool printPoint) {
 
-  uint64_t point = GetNbItem() / 16;
+  uint64_t point = GetNbItem() / 32;                        // sky59 nema tu byt 32??   bolo 16
   uint64_t pointPrint = 0;
 
   for(uint32_t h = from; h < to; h++) {
     fwrite(&E[h].nbItem,sizeof(uint32_t),1,f);
     fwrite(&E[h].maxItem,sizeof(uint32_t),1,f);
     for(uint32_t i = 0; i < E[h].nbItem; i++) {
-      fwrite(&(E[h].items[i]->x),16,1,f);
-      fwrite(&(E[h].items[i]->d),16,1,f);
+      fwrite(&(E[h].items[i]->x),32,1,f);
+      fwrite(&(E[h].items[i]->d),32,1,f);                   // sky59 bolo 16
       if(printPoint) {
         pointPrint++;
         if(pointPrint > point) {
@@ -451,8 +592,8 @@ void HashTable::LoadTable(FILE* f,uint32_t from,uint32_t to) {
 
     for(uint32_t i = 0; i < E[h].nbItem; i++) {
       ENTRY* e = (ENTRY*)malloc(sizeof(ENTRY));
-      fread(&(e->x),16,1,f);
-      fread(&(e->d),16,1,f);
+      fread(&(e->x),32,1,f);
+      fread(&(e->d),32,1,f);                // sky59 bolo 16
       E[h].items[i] = e;
     }
 

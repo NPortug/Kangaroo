@@ -89,7 +89,7 @@ uint32_t Kangaroo::CheckHash(uint32_t h,uint32_t nbItem,HashTable* hT,FILE* f) {
     else      e = items + i;
 
     uint32_t hC = S[i].x.bits64[2] & HASH_MASK;
-    ok = (hC == h) && (S[i].x.bits64[0] == e->x.i64[0]) && (S[i].x.bits64[1] == e->x.i64[1]);
+    ok = (hC == h) && (S[i].x.bits64[0] == e->x.i64[0]) && (S[i].x.bits64[1] == e->x.i64[1])  && (S[i].x.bits64[2] == e->x.i64[2])  && (S[i].x.bits64[3] == e->x.i64[3]) ;       //sky59
     if(!ok) nbWrong++;
     //if(!ok) {
     //  ::printf("\nCheckWorkFile wrong at: %06X [%d]\n",h,i);
