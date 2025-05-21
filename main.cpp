@@ -32,7 +32,7 @@ using namespace std;
 
 void printUsage() {
 
-  printf("Kangaroo [-v] [-t nbThread] [-d dpBit] [gpu] [-check]\n");
+  printf("Kangaroo254 [-v] [-t nbThread] [-d dpBit] [gpu] [-check]\n");
   printf("         [-gpuId gpuId1[,gpuId2,...]] [-g g1x,g1y[,g2x,g2y,...]]\n");
   printf("         inFile\n");
   printf(" -v: Print version\n");
@@ -167,9 +167,9 @@ static bool splitWorkFile = false;
 int main(int argc, char* argv[]) {
 
 #ifdef USE_SYMMETRY
-  printf("Kangaroo v" RELEASE " (with symmetry)\n");
+  printf("Kangaroo v" RELEASE " (with symmetry [254b edition by sky59])\n");
 #else
-  printf("Kangaroo v" RELEASE "\n");
+  printf("Kangaroo v" RELEASE " [254b edition by sky59] \n");
 #endif
 
   // Global Init
@@ -182,6 +182,8 @@ int main(int argc, char* argv[]) {
 
   int a = 1;
   nbCPUThread = Timer::getCoreNumber();
+
+ // Int::Check();    //sky59  hadze chybu delenie nulou ???
 
   while (a < argc) {
 
@@ -272,10 +274,18 @@ int main(int argc, char* argv[]) {
       Kangaroo::CreateEmptyPartWork(workFile);
       exit(0);
     } else if(strcmp(argv[a],"-s") == 0) {
+		if (serverIP != "") {                            // sky59 novy check
+        printf("-s and -c are incompatible\n");
+        exit(-1);
+      }		
       a++;
       serverMode = true;
     } else if(strcmp(argv[a],"-c") == 0) {
       CHECKARG("-c",1);
+	    if (serverMode) {                                // sky59 novy check
+        printf("-s and -c are incompatible\n");
+        exit(-1);
+      }	  
       serverIP = string(argv[a]);
       a++;
     } else if(strcmp(argv[a],"-sp") == 0) {

@@ -31,7 +31,7 @@
 // GPU group size
 #define GPU_GRP_SIZE 128
 
-// GPU number of run per kernel call
+// GPU number of run per kernel call   sky59  bolo 16
 #define NB_RUN 64
 
 // Kangaroo type

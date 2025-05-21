@@ -42,6 +42,7 @@ typedef int SOCKET;
 #include "HashTable.h"
 #include "SECPK1/IntGroup.h"
 #include "GPU/GPUEngine.h"
+//#include "Constants.h"
 
 #ifdef WIN64
 typedef HANDLE THREAD_HANDLE;
@@ -95,8 +96,8 @@ typedef struct {
 
   uint32_t kIdx;
   uint32_t h;
-  int128_t x;
-  int128_t d;
+  int256_t x;
+  int256_t d;
 
 } DP;
 
@@ -161,11 +162,11 @@ public:
 
 private:
 
-  bool IsDP(uint64_t x);
+  bool IsDP(uint64_t x);                      // sky59 ????? bool IsDP(Int *x);
   void SetDP(int size);
   void CreateHerd(int nbKangaroo,Int *px, Int *py, Int *d, int firstType,bool lock=true);
   void CreateJumpTable();
-  bool AddToTable(uint64_t h,int128_t *x,int128_t *d);
+  bool AddToTable(uint64_t h,int256_t *x,int256_t *d);
   bool AddToTable(Int *pos,Int *dist,uint32_t kType);
   bool SendToServer(std::vector<ITEM> &dp,uint32_t threadId,uint32_t gpuId);
   bool CheckKey(Int d1,Int d2,uint8_t type);
@@ -181,7 +182,7 @@ private:
   void SaveWork(uint64_t totalCount,double totalTime,TH_PARAM *threads,int nbThread);
   void SaveServerWork();
   void FetchWalks(uint64_t nbWalk,Int *x,Int *y,Int *d);
-  void FetchWalks(uint64_t nbWalk,std::vector<int128_t>& kangs,Int* x,Int* y,Int* d);
+  void FetchWalks(uint64_t nbWalk,std::vector<int256_t>& kangs,Int* x,Int* y,Int* d);
   void FectchKangaroos(TH_PARAM *threads);
   FILE *ReadHeader(std::string fileName,uint32_t *version,int type);
   bool  SaveHeader(std::string fileName,FILE* f,int type,uint64_t totalCount,double totalTime);
@@ -204,8 +205,8 @@ private:
   void InitSocket();
   void WaitForServer();
   int32_t GetServerStatus();
-  bool SendKangaroosToServer(std::string& fileName,std::vector<int128_t>& kangs);
-  bool GetKangaroosFromServer(std::string& fileName,std::vector<int128_t>& kangs);
+  bool SendKangaroosToServer(std::string& fileName,std::vector<int256_t>& kangs);
+  bool GetKangaroosFromServer(std::string& fileName,std::vector<int256_t>& kangs);
 
 #ifdef WIN64
   HANDLE ghMutex;
@@ -243,7 +244,7 @@ private:
   Int rangeWidthDiv4;
   Int rangeWidthDiv8;
 
-  uint64_t dMask;
+  uint64_t dMask;                  // sky59 bolo 64_t
   uint32_t dpSize;
   int32_t initDPSize;
   uint64_t collisionInSameHerd;
