@@ -569,7 +569,7 @@ bool Kangaroo::HandleRequest(TH_PARAM *p) {
             if(kType == WILD)
               P = secp->AddDirect(keyToSearch,P);
 
-            uint32_t hC = P.x.bits64[2] & HASH_MASK;        // sky59 tento problem s [2] ohladom hash ti uz bol
+            uint32_t hC = P.x.bits64[2] & HASH_MASK;       
             bool ok = (hC == h) && (P.x.bits64[0] == dp[i].x.i64[0]) && (P.x.bits64[1] == dp[i].x.i64[1]) && (P.x.bits64[2] == dp[i].x.i64[2]) && (P.x.bits64[3] == dp[i].x.i64[3]) ;
             if(!ok) {
               if(kType==TAME) {
@@ -700,7 +700,7 @@ void Kangaroo::RunServer() {
   }
   SetDP(initDPSize);
 
-  if(sizeof(DP) != 40) {                                           //sky59 tu ma byt   72 ????
+  if(sizeof(DP) != 40) {                                      
     ::printf("Error: Invalid DP size struct\n");
     exit(-1);
   }
