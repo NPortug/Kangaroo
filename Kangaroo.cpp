@@ -152,8 +152,7 @@ bool Kangaroo::IsDP(uint64_t x) {
 
 
 /*
-bool Kangaroo::IsDP(Int *x) {                     // sky59 nova funkcia
-
+bool Kangaroo::IsDP(Int *x) 
   return  ((x->bits64[3] & dMask.i64[3]) == 0) &&
           ((x->bits64[2] & dMask.i64[2]) == 0) &&
           ((x->bits64[1] & dMask.i64[1]) == 0) &&
@@ -164,7 +163,7 @@ bool Kangaroo::IsDP(Int *x) {                     // sky59 nova funkcia
 
 
 
-// sky59  ponechavam dMask max 64 bitov
+
 void Kangaroo::SetDP(int size) {
 
   // Mask for distinguised point
@@ -185,40 +184,6 @@ void Kangaroo::SetDP(int size) {
 
 }
 
-
-/*
-//sky59 nova funkcia                           zatial je naopak
-void Kangaroo::SetDP(int size) {
-
-  // Mask for distinguised point
-  dpSize = size;
-  dMask.i64[0] = 0;
-  dMask.i64[1] = 0;
-  dMask.i64[2] = 0;
-  dMask.i64[3] = 0;
-  if (dpSize > 0) {
-    if(dpSize > 256) dpSize = 256;  
-	
-	
-    for (int i = 0; i < size; i += 64) {
-      int end = (i + 64 > size) ? (size-1) % 64 : 63;             //sky59 toto tu treba prehodit aby islo zprava dolava
-      uint64_t mask = ((1ULL << end) - 1) << 1 | 1ULL;
-      dMask.i64[(int)(i/64)] = mask;
-                                       }
-  }
-
-#ifdef WIN64
-  ::printf("DP size: %d [0x%016I64X%016I64%016IX64X%016I64X]\n",dpSize,dMask.i64[3],dMask.i64[2],dMask.i64[1],dMask.i64[0]);
-#else
-  ::printf("DP size: %d [0x%" PRIx64 "%" PRIx64 "%" PRIx64 "%" PRIx64 "]\n",dpSize,dMask.i64[3],dMask.i64[2],dMask.i64[1],dMask.i64[0]);
-#endif
-
-}
-
-*/
-
-
-// ----------------------------------------------------------------------------
 
 bool Kangaroo::Output(Int *pk,char sInfo,int sType) {
 
